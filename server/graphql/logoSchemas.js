@@ -22,7 +22,25 @@ var logoType = new GraphQLObjectType({
             color: {
                 type: GraphQLString
             },
+            backgroundColor : {
+                type: GraphQLString
+            },
+            borderColor : {
+                type: GraphQLString
+            },
             fontSize: {
+                type: GraphQLInt
+            },
+            borderRadius: {
+                type: GraphQLInt
+            },
+            borderWidth: {
+                type: GraphQLInt
+            },
+            padding: {
+                type: GraphQLInt
+            },
+            margin: {
                 type: GraphQLInt
             },
             lastUpdate: {
