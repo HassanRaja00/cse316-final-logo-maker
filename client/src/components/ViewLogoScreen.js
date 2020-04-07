@@ -40,7 +40,7 @@ class ViewLogoScreen extends Component {
                     if (error) return `Error! ${error.message}`;
                     const styles = {
                         container: {
-                            ttextAlign: "center",
+                            textAlign: "center",
                             color: data.logo.color,
                             fontSize: data.logo.fontSize + "pt",
                             padding: data.logo.padding + "pt",
