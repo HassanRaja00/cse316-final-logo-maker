@@ -106,7 +106,7 @@ class ViewLogoScreen extends Component {
                                                         e.preventDefault();
                                                         removeLogo({ variables: { id: data.logo._id } });
                                                     }}>
-                                                    <Link to={`/edit/${data.logo._id}`} className="btn btn-success">Edit</Link>&nbsp;
+                                                    <Link to={`/edit/${data.logo._id}`} className="btn btn-success">Edit</Link>&nbsp;&nbsp;
                                                 <button type="submit" className="btn btn-danger">Delete</button>
                                                 </form>
                                                 {loading && <p>Loading...</p>}

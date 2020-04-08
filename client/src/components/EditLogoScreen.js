@@ -105,6 +105,21 @@ class EditLogoScreen extends Component {
         this.setState( {margin: event.target.value} );
     }
 
+    //this method sets the initial state
+    setLogo(text, color, bckcolor, brdcolor, font, br, bw, pad, marg){
+        this.setState( {
+            text: text,
+            color: color,
+            backgroundColor: bckcolor,
+            borderColor: brdcolor,
+            fontSize: font,
+            borderRadius: br,
+            borderWidth: bw,
+            padding: pad,
+            margin: marg
+        } );
+    }
+
 
     render() {
         let text, color, fontSize, backgroundColor, borderColor, borderRadius, borderWidth, padding, margin;
@@ -113,6 +128,10 @@ class EditLogoScreen extends Component {
                 {({ loading, error, data }) => {
                     if (loading) return 'Loading...';
                     if (error) return `Error! ${error.message}`;
+                    if(this.state.text === ""){
+                        this.setLogo(data.logo.text, data.logo.color, data.logo.backgroundColor, data.logo.borderColor, data.logo.fontSize,
+                            data.logo.borderRadius, data.logo.borderWidth, data.logo.padding, data.logo.margin);
+                    }
 
                     const styles = {
                         container: {
@@ -217,7 +236,9 @@ class EditLogoScreen extends Component {
                                                                     }} placeholder="Margin" defaultValue={data.logo.margin} onChange={this.changeMargin} />
                                                                 </div>
                                                                 
+                                                                <Link to={`/view/${data.logo._id}`} className="btn btn-secondary">Cancel</Link>&nbsp;&nbsp;
                                                                 <button type="submit" className="btn btn-success">Submit</button>
+                                                                
                                                             </form>
                                                         </div>
                                                         <div class="col"> 
