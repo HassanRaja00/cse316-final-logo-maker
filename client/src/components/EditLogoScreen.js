@@ -55,6 +55,7 @@ class EditLogoScreen extends Component {
         //make a state to manage the css variables
         this.state = {
             text: "",
+            isEmpty: true,
             color: "",
             backgroundColor: "",
             borderColor: "",
@@ -68,7 +69,12 @@ class EditLogoScreen extends Component {
 
     //method for text change
     changeText = (event) =>{
-        this.setState( {text: event.target.value} );
+        if(event.target.value === "" || !event.target.value.replace(/\s/g, '').length){
+            this.setState( {text: event.target.value, isEmpty: true} );
+        } else {
+            let newstr = event.target.value.replace(/ /g, "\u00a0");
+            this.setState( {text: newstr, isEmpty: false} );
+        }
     }
 
     changeTextColor = (event) => {
@@ -207,37 +213,42 @@ class EditLogoScreen extends Component {
                                                                 </div>
                                                                 <div className="form-group">
                                                                     <label htmlFor="fontSize">Font Size:</label>
-                                                                    <input type="number" min="2" max="144" className="form-control" name="fontSize" ref={node => {
+                                                                    <span>  {this.state.fontSize} </span>
+                                                                    <input type="range" min="2" max="144" className="form-control-range" name="fontSize" ref={node => {
                                                                         fontSize = node;
                                                                     }} placeholder="Font Size" defaultValue={data.logo.fontSize} onChange={this.changeFontSize}/>
                                                                 </div>
                                                                 <div className="form-group">
                                                                     <label htmlFor="borderRadius">Border Radius:</label>
-                                                                    <input type="number" min="2" max="100" className="form-control" name="borderRadius" ref={node => {
+                                                                    <span> {this.state.borderRadius} </span>
+                                                                    <input type="range" min="2" max="100" className="form-control-range" name="borderRadius" ref={node => {
                                                                         borderRadius = node;
                                                                     }} placeholder="Border Radius" defaultValue={data.logo.borderRadius} onChange={this.changeBorderRadius} />
                                                                 </div>
                                                                 <div className="form-group">
                                                                     <label htmlFor="borderWidth">Border Width:</label>
-                                                                    <input type="number" min="2" max="144" className="form-control" name="borderWidth" ref={node => {
+                                                                    <span> {this.state.borderWidth} </span>
+                                                                    <input type="range" min="2" max="144" className="form-control-range" name="borderWidth" ref={node => {
                                                                         borderWidth = node;
                                                                     }} placeholder="Border Width" defaultValue={data.logo.borderWidth} onChange={this.changeBorderWidth} />
                                                                 </div>
                                                                 <div className="form-group">
                                                                     <label htmlFor="padding">Padding:</label>
-                                                                    <input type="number" min="2" max="144" className="form-control" name="padding" ref={node => {
+                                                                    <span> {this.state.padding} </span>
+                                                                    <input type="range" min="2" max="144" className="form-control-range" name="padding" ref={node => {
                                                                         padding = node;
                                                                     }} placeholder="Padding" defaultValue={data.logo.padding} onChange={this.changePadding}/>
                                                                 </div>
                                                                 <div className="form-group">
                                                                     <label htmlFor="margin">Margin:</label>
-                                                                    <input type="number" min="2" max="144" className="form-control" name="margin" ref={node => {
+                                                                    <span> {this.state.margin} </span>
+                                                                    <input type="range" min="2" max="144" className="form-control-range" name="margin" ref={node => {
                                                                         margin = node;
                                                                     }} placeholder="Margin" defaultValue={data.logo.margin} onChange={this.changeMargin} />
                                                                 </div>
                                                                 
                                                                 <Link to={`/view/${data.logo._id}`} className="btn btn-secondary">Cancel</Link>&nbsp;&nbsp;
-                                                                <button type="submit" className="btn btn-success">Submit</button>
+                                                                <button type="submit" className="btn btn-success" disabled={this.state.isEmpty} >Submit</button>
                                                                 
                                                             </form>
                                                         </div>
