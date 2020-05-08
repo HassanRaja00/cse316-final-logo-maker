@@ -3,29 +3,41 @@ import { Link } from 'react-router-dom';
 import '../App.css';
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
+import AuthContext from '../context/auth-control';
 
 const GET_LOGOS = gql`
   {
-    logos {
+    getAllLogos {
       _id
       text
       lastUpdate
+      created_by{
+          _id
+          username
+      }
     }
   }
 `;
 
 class HomeScreen extends Component {
+    static contextType = AuthContext;
 
     render() {
         return (
+            
             <Query pollInterval={500} query={GET_LOGOS}>
                 {({ loading, error, data }) => {
                     if (loading) return 'Loading...';
                     if (error) return `Error! ${error.message}`;
-                    console.log(data.logos);
-                    let x = data.logos.sort( (a, b) => {
+                    let x = data.getAllLogos.sort( (a, b) => {
                         return new Date(b.lastUpdate) - new Date(a.lastUpdate);
                     });
+                    //only show logos created by the user who is logged in
+                    x = x.filter(logo => {
+                        return logo.created_by._id === this.context.userId
+                    });
+                    console.log(x);
+                    //cities.filter(city => city.population > 3000000);
 
 
                     return (
@@ -35,7 +47,7 @@ class HomeScreen extends Component {
                                 {x.map((logo, index) => (
                                     <div key={index} className='home_logo_link'
                                         style={{ cursor: "pointer" }}>
-                                        <Link to={`/view/${logo._id}`}>{logo.text}</Link>
+                                        <Link to={`/edit/${logo._id}`}>{logo.text}</Link>
                                     </div>
                                 ))}
                             </div>

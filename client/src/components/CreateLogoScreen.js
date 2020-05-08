@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import gql from "graphql-tag";
 import { Mutation } from "react-apollo";
 import { Link } from 'react-router-dom';
+import AuthContext from '../context/auth-control';
 
 const ADD_LOGO = gql`
     mutation AddLogo(
@@ -25,6 +26,9 @@ const ADD_LOGO = gql`
                 padding: $padding, 
                 margin: $margin ) {
             _id
+            created_by{
+                username
+            }
         }
     }
 `;
@@ -47,6 +51,8 @@ class CreateLogoScreen extends Component {
             margin: ""
         }
     }
+
+    static contextType = AuthContext;
 
     //method for text change
     changeText = (event) =>{
@@ -123,9 +129,9 @@ class CreateLogoScreen extends Component {
                             </h3>
                             </div>
                             <div className="panel-body">
-                                <div class="container-fluid">
-                                    <div class="row">
-                                        <div class="col-sm-">
+                                <div className="container-fluid">
+                                    <div className="row">
+                                        <div className="col-sm-">
                                         <form onSubmit={e => {
                                             e.preventDefault();
                                             addLogo({ variables: { text: text.value, color: color.value,
@@ -206,7 +212,7 @@ class CreateLogoScreen extends Component {
                                             <button type="submit" className="btn btn-success" disabled={this.state.isEmpty}>Submit</button>
                                         </form>
                                         </div>
-                                            <div class="col"> 
+                                            <div className="col"> 
                                                 <div style={styles.container}> {this.state.text}   </div>
                                             </div>
                                     </div>

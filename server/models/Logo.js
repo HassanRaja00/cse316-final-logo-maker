@@ -13,6 +13,10 @@ var LogoSchema = new mongoose.Schema({
   padding: { type: Number, min: 2, max: 144 },
   margin: { type: Number, min: 2, max: 144 },
   lastUpdate: { type: Date, default: Date.now },
+  created_by: { // logos can only be created by users
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }
 });
 
 module.exports = mongoose.model('Logo', LogoSchema);

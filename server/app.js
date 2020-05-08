@@ -7,6 +7,7 @@ var mongoose = require('mongoose');
 var graphqlHTTP = require('express-graphql');
 var schema = require('./graphql/logoSchemas');
 var cors = require("cors");
+const isAuth = require('./middleware/is-auth');
 
 mongoose.connect('mongodb://localhost/node-graphql', { promiseLibrary: require('bluebird'), useNewUrlParser: true })
   .then(() =>  console.log('connection successful'))
@@ -14,6 +15,7 @@ mongoose.connect('mongodb://localhost/node-graphql', { promiseLibrary: require('
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+// var auth = require('./routes/auth');
 
 var app = express();
 
@@ -29,7 +31,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+// app.use('/auth', auth);
 app.use('*', cors());
+
+app.use(isAuth);
+
 app.use('/graphql', cors(), graphqlHTTP({
   schema: schema,
   rootValue: global,
