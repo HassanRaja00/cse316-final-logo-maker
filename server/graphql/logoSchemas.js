@@ -244,7 +244,7 @@ var queryType = new GraphQLObjectType({
                             _id: user.id,
                             username: user.username,
                             password: user.password,
-                            createdLogos: logo.bind(this. user.createdLogos)
+                            createdLogos: logo.bind(this, user.createdLogos)
                         };
                     })
                     .catch(err => {

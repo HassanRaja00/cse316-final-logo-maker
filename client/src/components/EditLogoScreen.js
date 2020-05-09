@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import gql from "graphql-tag";
 import { Query, Mutation } from "react-apollo";
+import { Rnd } from 'react-rnd';
 
 const GET_LOGO = gql`
     query getLogo($logoId: String) {
@@ -18,6 +19,14 @@ const GET_LOGO = gql`
             margin
         }
     }
+`;
+
+const DELETE_LOGO = gql`
+  mutation removeLogo($id: String!) {
+    removeLogo(id:$id) {
+      _id
+    }
+  }
 `;
 
 
@@ -264,10 +273,33 @@ class EditLogoScreen extends Component {
                                                                 <button type="submit" className="btn btn-success" disabled={this.state.text === ''} >Submit</button>
                                                                 
                                                             </form>
+                                                            <Mutation mutation={DELETE_LOGO} key={data.getLogo._id} onCompleted={() => this.props.history.push('/')}>
+                                                            {(removeLogo, { loading, error }) => (
+                                                                <div>
+                                                                    <form
+                                                                        onSubmit={e => {
+                                                                            e.preventDefault();
+                                                                            removeLogo({ variables: { id: data.getLogo._id } });
+                                                                        }}>
+                                                                    <button type="submit" className="btn btn-danger">Delete</button>
+                                                                    </form>
+                                                                    {loading && <p>Loading...</p>}
+                                                                    {error && <p>Error :( Please try again</p>}
+                                                                </div>
+                                                            )}
+                                                        </Mutation>
                                                         </div>
                                                         <div className="col"> 
-                                                            <div style={styles.container}>
-                                                                {this.state.text} 
+                                                            <div style={styles.container} height='300px' width='400px'>
+                                                                <Rnd bounds='parent'>
+                                                                {this.state.text}
+                                                                </Rnd>
+                                                                <Rnd bounds='parent'>
+                                                                    <img src='https://moneydotcomvip.files.wordpress.com/2018/05/watch-2018-nba-finals-game-1-695337026.jpg' 
+                                                                    height='200px' width='200px' />
+                                                            
+                                                                </Rnd>
+                                                                
                                                             </div>
                                                         
                                                         </div>
