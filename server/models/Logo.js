@@ -1,15 +1,26 @@
 var mongoose = require('mongoose');
 
-// finish schema
+
 var LogoSchema = new mongoose.Schema({
   id: String,
-  text: String,
-  color: String,
+  height: { type: Number, min:100 },
+  width: { type: Number, min: 100 },
+  text: [
+    {
+      posX: Number,
+      posY: Number,
+      textString: String,
+      textFontSize: { type: Number, min: 2, max: 144 },
+      textColor: String
+      // type: mongoose.Schema.Types.ObjectId, // every piece of text has cooridinates, color, font size
+      // ref: 'LogoText'
+    }
+  ],
   backgroundColor: String,
   borderColor: String,
-  fontSize: { type: Number, min: 2, max: 144 },
   borderRadius: { type: Number, min: 2, max: 100 },
   borderWidth: { type: Number, min: 2, max: 144 },
+  images: [String],
   padding: { type: Number, min: 2, max: 144 },
   margin: { type: Number, min: 2, max: 144 },
   lastUpdate: { type: Date, default: Date.now },

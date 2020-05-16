@@ -1,6 +1,7 @@
 var GraphQLSchema = require('graphql').GraphQLSchema;
 var GraphQLObjectType = require('graphql').GraphQLObjectType;
 var GraphQLList = require('graphql').GraphQLList;
+var GraphQLInputObjectType = require('graphql').GraphQLInputObjectType;
 var GraphQLObjectType = require('graphql').GraphQLObjectType;
 var GraphQLNonNull = require('graphql').GraphQLNonNull;
 var GraphQLID = require('graphql').GraphQLID;
@@ -18,13 +19,14 @@ const logo = logoIds => {
         return logos.map(logo => {
             return {
                 _id: logo._id,
+                height: logo.height,
+                width: logo.width,
                 text: logo.text,
-                color: logo.color,
                 backgroundColor: logo.backgroundColor,
                 borderColor: logo.borderColor,
-                fontSize: logo.fontSize,
                 borderRadius: logo.borderRadius,
                 borderWidth: logo.borderWidth,
+                images: logo.images,
                 padding: logo.padding, 
                 margin: logo.margin,
                 lastUpdate: logo.lastUpdate,
@@ -52,6 +54,19 @@ const user = userId => {
     });
 }
 
+var logoTextType = new GraphQLObjectType({
+    name: 'logotext',
+    fields: function() {
+        return {
+            posX: { type: GraphQLInt },
+            posY: { type: GraphQLInt },
+            textString: { type: GraphQLString },
+            textFontSize: { type: GraphQLInt },
+            textColor: { type: GraphQLString }
+        }
+    }
+});
+
 var logoType = new GraphQLObjectType({
     name: 'logo',
     fields: function () {
@@ -59,11 +74,14 @@ var logoType = new GraphQLObjectType({
             _id: {
                 type: GraphQLString
             },
-            text: {
-                type: GraphQLString
+            height: {
+                type: GraphQLInt
             },
-            color: {
-                type: GraphQLString
+            width: {
+                type: GraphQLInt
+            },
+            text: {
+                type: GraphQLList(logoTextType)
             },
             backgroundColor : {
                 type: GraphQLString
@@ -71,14 +89,14 @@ var logoType = new GraphQLObjectType({
             borderColor : {
                 type: GraphQLString
             },
-            fontSize: {
-                type: GraphQLInt
-            },
             borderRadius: {
                 type: GraphQLInt
             },
             borderWidth: {
                 type: GraphQLInt
+            },
+            images: {
+                type: GraphQLList(GraphQLString)
             },
             padding: {
                 type: GraphQLInt
@@ -145,13 +163,14 @@ var queryType = new GraphQLObjectType({
                         return events.map(event => {
                             return {
                                 _id: event._id,
+                                height: event.height,
+                                width: event.width,
                                 text: event.text,
-                                color: event.color,
                                 backgroundColor: event.backgroundColor,
                                 borderColor: event.borderColor,
-                                fontSize: event.fontSize,
                                 borderRadius: event.borderRadius,
                                 borderWidth: event.borderWidth,
+                                images: event.images,
                                 padding: event.padding, 
                                 margin: event.margin,
                                 lastUpdate: event.lastUpdate,
@@ -206,13 +225,14 @@ var queryType = new GraphQLObjectType({
                     .then(alogo => {
                         return {
                             _id: alogo._id,
+                            height: alogo.height,
+                            width: alogo.width,
                             text: alogo.text,
-                            color: alogo.color,
                             backgroundColor: alogo.backgroundColor,
                             borderColor: alogo.borderColor,
-                            fontSize: alogo.fontSize,
                             borderRadius: alogo.borderRadius,
                             borderWidth: alogo.borderWidth,
+                            images: alogo.images,
                             padding: alogo.padding,
                             margin: alogo.margin,
                             lastUpdate: alogo.lastUpdate,
@@ -288,6 +308,17 @@ var queryType = new GraphQLObjectType({
     }
 });
 
+const logoTextInputType = new GraphQLInputObjectType({
+    name: 'logoTextInput',
+    fields: () => ({
+        posX: {type: GraphQLInt},
+        posY: {type: GraphQLInt},
+        textString: {type: GraphQLString},
+        textFontSize: {type: GraphQLInt},
+        textColor: {type: GraphQLString}
+    })
+});
+
 var mutation = new GraphQLObjectType({
     name: 'Mutation',
     fields: function () {
@@ -295,11 +326,14 @@ var mutation = new GraphQLObjectType({
             addLogo: {
                 type: logoType,
                 args: {
-                    text: {
-                        type: new GraphQLNonNull(GraphQLString)
+                    height: {
+                        type: new GraphQLNonNull(GraphQLInt)
                     },
-                    color: {
-                        type: new GraphQLNonNull(GraphQLString)
+                    width: {
+                        type: new GraphQLNonNull(GraphQLInt)
+                    },
+                    text: {
+                        type: new GraphQLNonNull( GraphQLList(logoTextInputType) )
                     },
                     backgroundColor: {
                         type: new GraphQLNonNull(GraphQLString)
@@ -307,14 +341,14 @@ var mutation = new GraphQLObjectType({
                     borderColor: {
                         type: new GraphQLNonNull(GraphQLString)
                     },
-                    fontSize: {
-                        type: new GraphQLNonNull(GraphQLInt)
-                    },
                     borderRadius: {
                         type: new GraphQLNonNull(GraphQLInt)
                     },
                     borderWidth: {
                         type: new GraphQLNonNull(GraphQLInt)
+                    },
+                    images: {
+                        type: new GraphQLNonNull(GraphQLList(GraphQLString))
                     },
                     padding : {
                         type: new GraphQLNonNull(GraphQLInt)
@@ -324,18 +358,20 @@ var mutation = new GraphQLObjectType({
                     }
                 },
                 resolve: function (root, params, req) {
-                    //check if authenticated
+                    // check if authenticated
                     if(!req.isAuth){
                         throw new Error('Not Authenticated!');
                     }
+                    console.log('before save');
                     const logo = new LogoModel({
+                        height: params.height,
+                        width: params.width,
                         text: params.text,
-                        color: params.color,
                         backgroundColor: params.backgroundColor,
                         borderColor: params.borderColor,
-                        fontSize: params.fontSize,
                         borderRadius: params.borderRadius,
                         borderWidth: params.borderWidth,
+                        images: params.images,
                         padding: params.padding,
                         margin: params.margin,
                         lastUpdate: params.lastUpdate,
@@ -344,9 +380,11 @@ var mutation = new GraphQLObjectType({
                     let createdLogo;
                     return logo.save()
                     .then(result => {
-                        createdLogo = { _id: result.id, text: result.text, color: result.color, backgroundColor: result.backgroundColor,
-                        borderColor: result.borderColor, fontSize: result.fontSize, borderRadius: result.borderRadius,
-                        borderWidth: result.borderWidth, padding: result.padding, margin: result.margin, lastUpdate: result.lastUpdate,
+                        console.log('after save');
+                        createdLogo = { _id: result.id, height: result.height, width: result.width, text: result.text, 
+                        backgroundColor: result.backgroundColor, borderColor: result.borderColor,
+                        borderRadius: result.borderRadius, borderWidth: result.borderWidth, images: result.images,
+                        padding: result.padding, margin: result.margin, lastUpdate: result.lastUpdate,
                         created_by: user.bind(this, result.created_by) };
                         return UserModel.findById(req.userId)
                     })
@@ -423,11 +461,14 @@ var mutation = new GraphQLObjectType({
                         name: 'id',
                         type: new GraphQLNonNull(GraphQLString)
                     },
-                    text: {
-                        type: new GraphQLNonNull(GraphQLString)
+                    height: {
+                        type: new GraphQLNonNull(GraphQLInt)
                     },
-                    color: {
-                        type: new GraphQLNonNull(GraphQLString)
+                    width: {
+                        type: new GraphQLNonNull(GraphQLInt)
+                    },
+                    text: {
+                        type: new GraphQLNonNull(GraphQLList(logoTextInputType))
                     },
                     backgroundColor: {
                         type: new GraphQLNonNull(GraphQLString)
@@ -435,14 +476,14 @@ var mutation = new GraphQLObjectType({
                     borderColor: {
                         type: new GraphQLNonNull(GraphQLString)
                     },
-                    fontSize: {
-                        type: new GraphQLNonNull(GraphQLInt)
-                    },
                     borderRadius: {
                         type: new GraphQLNonNull(GraphQLInt)
                     },
                     borderWidth: {
                         type: new GraphQLNonNull(GraphQLInt)
+                    },
+                    images: {
+                        type: new GraphQLNonNull(GraphQLList(GraphQLString))
                     },
                     padding : {
                         type: new GraphQLNonNull(GraphQLInt)
@@ -457,13 +498,14 @@ var mutation = new GraphQLObjectType({
                         throw new Error('Not Authenticated')
                     }
                     return LogoModel.findByIdAndUpdate(params.id, {
+                        height: params.height,
+                        width: params.width,
                         text: params.text,
-                        color: params.color,
                         backgroundColor: params.backgroundColor,
                         borderColor: params.borderColor,
-                        fontSize: params.fontSize,
                         borderRadius: params.borderRadius,
                         borderWidth: params.borderWidth,
+                        images: params.images,
                         padding: params.padding,
                         margin: params.margin,
                         lastUpdate: new Date()}, function (err) {

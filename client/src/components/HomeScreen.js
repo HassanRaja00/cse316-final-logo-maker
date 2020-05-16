@@ -51,8 +51,11 @@ class HomeScreen extends Component {
                     //     return logo.created_by._id === this.context.userId
                     // });
                     console.log(x);
-                    //cities.filter(city => city.population > 3000000);
-
+                    let title = '';
+                    let texts = data.getUser.createdLogos[0].text;
+                    for( let str of texts){
+                        title += str + ' ';
+                    }
 
                     return (
                         <div className="container row">
@@ -62,7 +65,7 @@ class HomeScreen extends Component {
                                 {x.map((logo, index) => (
                                     <div key={index} className='home_logo_link'
                                         style={{ cursor: "pointer" }}>
-                                        <Link to={`/edit/${logo._id}`}>{logo.text}</Link>
+                                        <Link to={`/edit/${logo._id}`}>{title}</Link>
                                     </div>
                                 ))}
                             </div>
