@@ -26,7 +26,9 @@ query getUser($id: String!) {
         username
         createdLogos{
             _id
-            text
+            text{
+                textString
+            }
             lastUpdate
         }
     }
@@ -50,11 +52,12 @@ class HomeScreen extends Component {
                     // x = x.filter(logo => {
                     //     return logo.created_by._id === this.context.userId
                     // });
-                    console.log(x);
+                    // console.log(x[0].text[0]);
                     let title = '';
-                    let texts = data.getUser.createdLogos[0].text;
+                    let texts = x[0].text;
                     for( let str of texts){
-                        title += str + ' ';
+                        console.log(str.textString);
+                        title += str.textString + ' ';
                     }
 
                     return (

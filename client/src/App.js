@@ -34,7 +34,9 @@ class App extends Component {
 
         this.client = new ApolloClient({ 
             link: this.authLink.concat(this.httpLink),
-            cache: new InMemoryCache()
+            cache: new InMemoryCache({
+                addTypename: false
+            })
         });
 
     }

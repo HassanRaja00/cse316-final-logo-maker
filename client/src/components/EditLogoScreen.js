@@ -10,9 +10,13 @@ const GET_LOGO = gql`
             _id
             height
             width
-            text
-            color
-            fontSize
+            text{
+                posX
+                posY
+                textString
+                textFontSize
+                textColor
+            }
             backgroundColor
             borderColor
             borderRadius
@@ -32,17 +36,15 @@ const DELETE_LOGO = gql`
   }
 `;
 
-
+//Did you mean \"logotext\", \"logo\", or \"logoTextInput\"?","
 const UPDATE_LOGO = gql`
     mutation updateLogo(
         $id: String!,
         $height: Int!,
         $width: Int!,
-        $text: [String]!,
-        $color: String!,
+        $text: [logoTextInput]!,
         $backgroundColor: String!,
         $borderColor: String!
-        $fontSize: Int!,
         $borderRadius: Int!,
         $borderWidth: Int!,
         $images: [String]!,
@@ -53,10 +55,8 @@ const UPDATE_LOGO = gql`
                 height: $height,
                 width: $width,
                 text: $text,
-                color: $color,
                 backgroundColor: $backgroundColor,
                 borderColor: $borderColor,
-                fontSize: $fontSize,
                 borderRadius: $borderRadius, 
                 borderWidth: $borderWidth, 
                 images: $images,
@@ -77,15 +77,14 @@ class EditLogoScreen extends Component {
             width: '',
             text: [],
             isEmpty: true,
-            color: "",
             backgroundColor: "",
             borderColor: "",
-            fontSize: "",
             borderRadius: "",
             borderWidth: "",
             images: [],
             padding: "",
-            margin: ""
+            margin: "",
+            focused: null
         }
     }
 
@@ -152,8 +151,16 @@ class EditLogoScreen extends Component {
         
     }
 
-    changeTextColor = (event) => {
-        this.setState( {color: event.target.value} );
+    changeTextColor = (event) => { 
+        let focus = this.state.focused;
+        let newtxt = this.state.text;
+        for (let txt of newtxt){
+            if(txt.textString === focus.textString){
+                console.log(txt.textString);
+                txt.textColor = event.target.value;
+            }
+        }
+        this.setState( {focused: focus, text: newtxt} );
         // console.log("changed text color: " + event.target.value);
     }
 
@@ -167,8 +174,15 @@ class EditLogoScreen extends Component {
         // console.log('new border color: ' + event.target.value);
     }
 
-    changeFontSize = (event) => {
-        this.setState( {fontSize: event.target.value });
+    changeFontSize = (event) => { 
+        let focus = this.state.focused;
+        let newtxt = this.state.text;
+        for (let txt of newtxt){
+            if(txt.textString === focus.textString){
+                txt.textFontSize = parseInt(event.target.value);
+            }
+        }
+        this.setState( {focused: focus, text: newtxt});
         // console.log('new font size: ' + event.target.value);
     }
 
@@ -193,17 +207,15 @@ class EditLogoScreen extends Component {
     }
 
     //this method sets the initial state
-    setLogo(height, width, text, color, bckcolor, brdcolor, font, br, bw, images, pad, marg){
+    setLogo(height, width, text, bckcolor, brdcolor, br, bw, images, pad, marg){
         if(images){
             this.setState( {
                 height: height,
                 width: width,
                 text: text,
                 isEmpty: false,
-                color: color,
                 backgroundColor: bckcolor,
                 borderColor: brdcolor,
-                fontSize: font,
                 borderRadius: br,
                 borderWidth: bw,
                 images: images,
@@ -216,10 +228,8 @@ class EditLogoScreen extends Component {
                 width: width,
                 text: text,
                 isEmpty: false,
-                color: color,
                 backgroundColor: bckcolor,
                 borderColor: brdcolor,
-                fontSize: font,
                 borderRadius: br,
                 borderWidth: bw,
                 images: [],
@@ -238,6 +248,20 @@ class EditLogoScreen extends Component {
         this.setState( { width: event.target.value } );
     }
 
+    changeFocusedState = (index) => {
+        this.setState( {focused: this.state.text[index]} );
+    }
+
+    updateTextPosition = (index, newX, newY) => {
+        let textPiece = this.state.text[index];
+        textPiece.posX = newX;
+        textPiece.posY = newY;
+        let newtxt = this.state.text;
+        newtxt[index].posX = parseInt(newX);
+        newtxt[index].posY = parseInt(newY); 
+        this.setState( {focused: textPiece, text: newtxt} );
+    }
+
 
     render() {
         let height, width, text, color, fontSize, backgroundColor, borderColor, borderRadius, borderWidth, images, padding, margin;
@@ -248,20 +272,18 @@ class EditLogoScreen extends Component {
                     if (loading) return 'Loading...';
                     if (error) return `Error! ${error.message}`;
                     if(this.state.isEmpty){
-                        this.setLogo(data.getLogo.height, data.getLogo.width, data.getLogo.text, data.getLogo.color, data.getLogo.backgroundColor, data.getLogo.borderColor, data.getLogo.fontSize,
+                        this.setLogo(data.getLogo.height, data.getLogo.width, data.getLogo.text, data.getLogo.backgroundColor, data.getLogo.borderColor,
                             data.getLogo.borderRadius, data.getLogo.borderWidth, data.getLogo.images, data.getLogo.padding, data.getLogo.margin);
                     }
                     
                     console.log(this.state.text);
                     console.log(this.state.images);
+                    //console.log(this.state.focused);
 
                     const styles = {
                         container: {
                             height: this.state.height + 'px',
                             width: this.state.width + 'px',
-                            textAlign: "center",
-                            color: this.state.color,
-                            fontSize: this.state.fontSize + "pt",
                             padding: this.state.padding + "pt",
                             borderStyle: "solid",
                             backgroundColor: this.state.backgroundColor,
@@ -290,9 +312,9 @@ class EditLogoScreen extends Component {
                                                         <form onSubmit={e => {
                                                                 e.preventDefault();
                                                                 updateLogo({ variables: { id: data.getLogo._id, height: parseInt(height.value),
-                                                                    width: parseInt(width.value), text: this.state.text, color: color.value,
+                                                                    width: parseInt(width.value), text: this.state.text,
                                                                     backgroundColor: backgroundColor.value, borderColor: borderColor.value, 
-                                                                    fontSize: parseInt(fontSize.value), borderRadius: parseInt(borderRadius.value),
+                                                                    borderRadius: parseInt(borderRadius.value),
                                                                     borderWidth: parseInt(borderWidth.value), images: this.state.images,
                                                                     padding: parseInt(padding.value), margin: parseInt(margin.value) } });
                                                                 height = '';
@@ -313,27 +335,14 @@ class EditLogoScreen extends Component {
                                                                 margin.value = "";
                                                             }}>
                                                                 
-                                                                <div className="form-group">
-                                                                    <label htmlFor="newText"> Add More Text:</label>
-                                                                    <input type="newText" className="form-control" name="newText" ref={node => {
-                                                                      //  console.log(node);
-                                                                        newText = node;
-                                                                    }} placeholder="New Text" onChange={(event) => newText = event.target.value} />
-                                                                    <button type='button' className='btn btn-info' onClick={() => this.addText(newText)} >Add Text</button>
-                                                                </div>
-                                                                <div className="form-group">
-                                                                    <label htmlFor="removeText"> Remove a Text:</label>
-                                                                    <input type="removeText" className="form-control" name="removeText" ref={node => {
-                                                                        removeText = node;
-                                                                    }} placeholder="Name Of Text To Remove" onChange={(event) => removeText = event.target.value} />
-                                                                    <button type='button' className='btn btn-warning' onClick={() => this.removeText(removeText)} >Remove Text</button>
-                                                                </div>
-                                                                <div className="form-group">
+                                                                
+                                                                {this.state.focused && <div className="form-group">
                                                                     <label htmlFor="color">Color:</label>
                                                                     <input type="color" className="form-control" name="color" ref={node => {
                                                                         color = node;
-                                                                    }} placeholder="Color" defaultValue={data.getLogo.color} onChange={this.changeTextColor} />
-                                                                </div>
+                                                                    }} placeholder="Color" defaultValue={this.state.focused.textColor} onChange={this.changeTextColor} />
+                                                                </div>}
+                                                                
                                                                 <div className="form-group">
                                                                     <label htmlFor="backgroundColor">Background Color:</label>
                                                                     <input type="color" className="form-control" name="backgroundColor" ref={node => {
@@ -346,20 +355,7 @@ class EditLogoScreen extends Component {
                                                                         borderColor = node;
                                                                     }} placeholder="Color" defaultValue={data.getLogo.borderColor} onChange={this.changeBorderColor} />
                                                                 </div>
-                                                                <div className="form-group">
-                                                                    <label htmlFor="addImage"> Add an Image URL:</label>
-                                                                    <input type="url" className="form-control" name="addImage" ref={node => {
-                                                                        addImage = node;
-                                                                    }} placeholder="Image URL here" onChange={(event) => addImage = event.target.value} />
-                                                                    <button type='button' className='btn btn-info' onClick={() => this.addImage(addImage)} >Insert Image</button>
-                                                                </div>
-                                                                <div className="form-group">
-                                                                    <label htmlFor="removeImage"> Remove an Image: (temp)</label>
-                                                                    <input type="removeImage" className="form-control" name="removeImage" ref={node => {
-                                                                        removeImage = node;
-                                                                    }} placeholder="Img URL here" onChange={(event) => removeImage = event.target.value} />
-                                                                    <button type='button' className='btn btn-warning' onClick={() => this.removeImage(removeImage)} >Remove Image</button>
-                                                                </div>
+                                                                
                                                                 <div className="form-group">
                                                                     <label htmlFor="logoHeight">Logo Height:</label>
                                                                     <span>  {this.state.height} </span>
@@ -374,13 +370,14 @@ class EditLogoScreen extends Component {
                                                                         width = node;
                                                                     }} placeholder="Width" defaultValue={data.getLogo.width} onChange={this.changeLogoWidth}/>
                                                                 </div>
-                                                                <div className="form-group">
+                                                                {this.state.focused && <div className="form-group">
                                                                     <label htmlFor="fontSize">Font Size:</label>
-                                                                    <span>  {this.state.fontSize} </span>
+                                                                    <span>  {this.state.focused.textFontSize} </span>
                                                                     <input type="range" min="2" max="144" className="form-control-range" name="fontSize" ref={node => {
                                                                         fontSize = node;
-                                                                    }} placeholder="Font Size" defaultValue={data.getLogo.fontSize} onChange={this.changeFontSize}/>
-                                                                </div>
+                                                                    }} placeholder="Font Size" defaultValue={this.state.focused.textFontSize} onChange={this.changeFontSize}/>
+                                                                </div>}
+                                                                
                                                                 <div className="form-group">
                                                                     <label htmlFor="borderRadius">Border Radius:</label>
                                                                     <span> {this.state.borderRadius} </span>
@@ -409,6 +406,35 @@ class EditLogoScreen extends Component {
                                                                         margin = node;
                                                                     }} placeholder="Margin" defaultValue={data.getLogo.margin} onChange={this.changeMargin} />
                                                                 </div>
+                                                                <div className="form-group">
+                                                                    <label htmlFor="newText"> Add More Text:</label>
+                                                                    <input type="newText" className="form-control" name="newText" ref={node => {
+                                                                      //  console.log(node);
+                                                                        newText = node;
+                                                                    }} placeholder="New Text" onChange={(event) => newText = event.target.value} />
+                                                                    <button type='button' className='btn btn-info' onClick={() => this.addText(newText)} >Add Text</button>
+                                                                </div>
+                                                                <div className="form-group">
+                                                                    <label htmlFor="removeText"> Remove a Text:</label>
+                                                                    <input type="removeText" className="form-control" name="removeText" ref={node => {
+                                                                        removeText = node;
+                                                                    }} placeholder="Name Of Text To Remove" onChange={(event) => removeText = event.target.value} />
+                                                                    <button type='button' className='btn btn-warning' onClick={() => this.removeText(removeText)} >Remove Text</button>
+                                                                </div>
+                                                                <div className="form-group">
+                                                                    <label htmlFor="addImage"> Add an Image URL:</label>
+                                                                    <input type="url" className="form-control" name="addImage" ref={node => {
+                                                                        addImage = node;
+                                                                    }} placeholder="Image URL here" onChange={(event) => addImage = event.target.value} />
+                                                                    <button type='button' className='btn btn-info' onClick={() => this.addImage(addImage)} >Insert Image</button>
+                                                                </div>
+                                                                <div className="form-group">
+                                                                    <label htmlFor="removeImage"> Remove an Image: (temp)</label>
+                                                                    <input type="removeImage" className="form-control" name="removeImage" ref={node => {
+                                                                        removeImage = node;
+                                                                    }} placeholder="Img URL here" onChange={(event) => removeImage = event.target.value} />
+                                                                    <button type='button' className='btn btn-warning' onClick={() => this.removeImage(removeImage)} >Remove Image</button>
+                                                                </div>
                                                                 
                                                                 <Link to='/' className="btn btn-secondary">Cancel</Link>&nbsp;&nbsp;
                                                                 <button type="submit" className="btn btn-success" disabled={this.state.text === ''} >Submit</button>
@@ -432,8 +458,12 @@ class EditLogoScreen extends Component {
                                                         </div>
                                                         <div className="col"> 
                                                             <div className='container' style={styles.container} >
-                                                                {this.state.text && this.state.text.map( (str, index) => <Rnd key={index} bounds='parent'>{str}</Rnd> )}
-                                                                {this.state.images && this.state.images.map((img, index) => <Rnd key={index}  bounds='parent' style={{backgroundImage: `url(${img})`, backgroundSize: 'cover'}} default={{x: 50, y:0, height: '30%', width:'30%'}} >  </Rnd>)}
+                                                                {this.state.text && this.state.text.map( (str, index) => <Rnd key={index} onDragStart={() => this.changeFocusedState(index)}
+                                                                 onDragStop={(event, destination) => this.updateTextPosition(index, destination.x, destination.y) } bounds='parent' 
+                                                                 style={{fontSize: str.textFontSize, color: str.textColor}} default={{x: str.posX, y: str.posY}}>{str.textString}</Rnd> )}
+
+                                                                {this.state.images && this.state.images.map((img, index) => <Rnd key={index}  bounds='parent' 
+                                                                style={{backgroundImage: `url(${img})`, backgroundSize: 'cover'}} default={{x: 50, y:0, height: '30%', width:'30%'}} >  </Rnd>)}
                                                             </div>
                                                         
                                                         </div>
