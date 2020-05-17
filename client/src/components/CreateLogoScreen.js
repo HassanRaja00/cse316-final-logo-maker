@@ -3,28 +3,31 @@ import gql from "graphql-tag";
 import { Mutation } from "react-apollo";
 import { Link } from 'react-router-dom';
 import AuthContext from '../context/auth-control';
+import { Rnd } from 'react-rnd';
 
 const ADD_LOGO = gql`
     mutation AddLogo(
-        $text: String!,
-        $color: String!,
+        $height: Int!,
+        $width: Int!,
+        $text: [logoTextInput]!,
         $backgroundColor: String!,
         $borderColor: String!
-        $fontSize: Int!,
         $borderRadius: Int!,
         $borderWidth: Int!,
+        $images: [String]!,
         $padding: Int!,
         $margin: Int! ) {
         addLogo(
+            height: $height,
+            width: $width,
             text: $text,
-                color: $color,
-                backgroundColor: $backgroundColor,
-                borderColor: $borderColor,
-                fontSize: $fontSize,
-                borderRadius: $borderRadius, 
-                borderWidth: $borderWidth, 
-                padding: $padding, 
-                margin: $margin ) {
+            backgroundColor: $backgroundColor,
+            borderColor: $borderColor,
+            borderRadius: $borderRadius, 
+            borderWidth: $borderWidth, 
+            images: $images,
+            padding: $padding, 
+            margin: $margin ) {
             _id
             created_by{
                 username
@@ -39,37 +42,35 @@ class CreateLogoScreen extends Component {
 
         //make state to manage css variables and text
         this.state = {
-            text: "",
+            height: '',
+            width: '',
+            text: [],
             isEmpty: true,
-            color: "",
             backgroundColor: "",
             borderColor: "",
-            fontSize: "",
             borderRadius: "",
             borderWidth: "",
+            images: [],
             padding: "",
-            margin: ""
+            margin: "",
+            focused: null
         }
     }
 
     static contextType = AuthContext;
 
-    //method for text change
-    changeText = (event) =>{
-        if(event.target.value === "" || !event.target.value.replace(/\s/g, '').length){
-            this.setState( {text: event.target.value, isEmpty: true} );
-            
-        } else {
-            let newstr = event.target.value.replace(/ /g, "\u00a0");
-            this.setState( {text: newstr, isEmpty: false} );
-        }
-        
-    }
 
     //changes text color
     changeTextColor = (event) => {
-        this.setState( {color: event.target.value} );
-        console.log("changed text color");
+        let focus = this.state.focused;
+        let newtxt = this.state.text;
+        for (let txt of newtxt){
+            if(txt.textString === focus.textString){
+                console.log(txt.textString);
+                txt.textColor = event.target.value;
+            }
+        }
+        this.setState( {focused: focus, text: newtxt} );
     }
 
     changeBackground = (event) => {
@@ -82,7 +83,14 @@ class CreateLogoScreen extends Component {
     }
 
     changeFontSize = (event) => {
-        this.setState( {fontSize: event.target.value });
+        let focus = this.state.focused;
+        let newtxt = this.state.text;
+        for (let txt of newtxt){
+            if(txt.textString === focus.textString){
+                txt.textFontSize = parseInt(event.target.value);
+            }
+        }
+        this.setState( {focused: focus, text: newtxt});
     }
 
     changeBorderRadius = (event) => {
@@ -101,13 +109,107 @@ class CreateLogoScreen extends Component {
         this.setState( {margin: event.target.value} );
     }
 
+    addText = (text) => {
+        console.log('adding text create');
+        let textObject = {
+            posX: 10,
+            posY: 10,
+            textString: text,
+            textFontSize: 20,
+            textColor: "#000000"
+        }
+        if(this.state.text){
+            let textArray = this.state.text;
+            textArray.push(textObject);
+            this.setState( {text: textArray} );
+        } else{
+            let textArray = [];
+            textArray.push(textObject);
+            this.setState( {text: textArray} );
+        } 
+    }
+
+    removeText = (text) => {
+        console.log('removing text create');
+        if(this.state.text){
+            let textArray = this.state.text;
+            textArray = textArray.filter( textObject => {
+                return textObject.textString !== text;
+            });
+            if(textArray !== this.state.text){ //if the array is not the same after filtering, set the state
+                this.setState( {text: textArray} );
+            } else{ //if array is the same, notify user
+                return <p>The text entered does not exist</p>
+            }
+        }
+    }
+
+    addImage = (url) => {
+        console.log('adding image create');
+        console.log(url);
+        if(this.state.images){
+            let imgArray = this.state.images;
+            imgArray.push(url);
+            this.setState( {images: imgArray} );
+        } else{
+            let imgArray = [];
+            imgArray.push(url);
+            this.setState( {images: imgArray} );
+        }
+    }
+
+    removeImage = (url) => {
+        console.log('removing image create');
+        console.log(url);
+        if(this.state.images){
+            let imgArray = this.state.images;
+            imgArray = imgArray.filter( imgurl => {
+                return imgurl !== url;
+            });
+            if(imgArray !== this.state.images) {
+                this.setState( {images: imgArray} );
+            } else {
+                return <p>The url entered does not exist</p>
+            }
+        }
+    }
+
+    changeLogoHeight = (event) => {
+        this.setState( { height: event.target.value } );
+    }
+
+    changeLogoWidth = (event) => {
+        this.setState( { width: event.target.value } );
+    }
+
+    changeFocusedState = (index) => {
+        this.setState( {focused: this.state.text[index]} );
+    }
+
+    updateTextPosition = (index, newX, newY) => {
+        let textPiece = this.state.text[index];
+        textPiece.posX = newX;
+        textPiece.posY = newY;
+        let newtxt = this.state.text;
+        newtxt[index].posX = parseInt(newX);
+        newtxt[index].posY = parseInt(newY); 
+        this.setState( {focused: textPiece, text: newtxt} );
+    }
+
+    enableSubmit = () => {
+        this.setState( {isEmpty: false} );
+    }
+    
+
+
+
     render() {
         let text, color, fontSize, backgroundColor, borderColor, borderRadius, borderWidth, padding, margin;
+        let height, width, newText, removeText, addImage, removeImage, images;
         const styles = {
             container: {
-                textAlign: "center",
-                color: this.state.color,
-                fontSize: this.state.fontSize + "pt",
+                height: this.state.height + 'px',
+                width: this.state.width + 'px',
                 padding: this.state.padding + "pt",
                 borderStyle: "solid",
                 backgroundColor: this.state.backgroundColor,
@@ -117,6 +219,12 @@ class CreateLogoScreen extends Component {
                 margin: this.state.margin + "pt"
             }
         }
+        console.log(this.state.text);
+        console.log(this.state.images);
+        if(this.state.height && this.state.width && this.state.backgroundColor && this.state.borderColor && this.state.borderRadius &&
+            this.state.borderWidth && this.state.padding && this.state.margin && this.state.isEmpty){
+                this.enableSubmit();
+            }
         return (
             <Mutation mutation={ADD_LOGO} onCompleted={() => this.props.history.push('/')}>
                 {(addLogo, { loading, error }) => (
@@ -134,13 +242,18 @@ class CreateLogoScreen extends Component {
                                         <div className="col-sm-">
                                         <form onSubmit={e => {
                                             e.preventDefault();
-                                            addLogo({ variables: { text: text.value, color: color.value,
-                                                backgroundColor: backgroundColor.value, borderColor: borderColor.value, 
-                                                fontSize: parseInt(fontSize.value), borderRadius: parseInt(borderRadius.value),
-                                                borderWidth: parseInt(borderWidth.value), padding: parseInt(padding.value),
+                                            addLogo({ variables: { height:parseInt(this.state.height),
+                                                width: parseInt(this.state.width),
+                                                text: this.state.text,
+                                                backgroundColor: backgroundColor.value, 
+                                                borderColor: borderColor.value, 
+                                                borderRadius: parseInt(borderRadius.value),
+                                                borderWidth: parseInt(borderWidth.value), 
+                                                images: this.state.images,
+                                                padding: parseInt(padding.value),
                                                 margin: parseInt(margin.value) } });
-                                                text.value = "";
-                                                color.value = "";
+                                                text = "";
+                                                color = "";
                                                 backgroundColor = "";
                                                 borderColor = "";
                                                 fontSize.value = "";
@@ -149,18 +262,14 @@ class CreateLogoScreen extends Component {
                                                 padding.value = "";
                                                 margin.value = "";
                                         }}>
-                                            <div className="form-group">
-                                                <label htmlFor="text">Text:</label>
-                                                <input type="text" className="form-control" name="text" ref={node => {
-                                                    text = node;
-                                                }} placeholder="Text"  onChange={this.changeText} />
-                                            </div>
-                                            <div className="form-group">
+                                        
+                                            {this.state.focused && <div className="form-group">
                                                 <label htmlFor="color">Color:</label>
                                                 <input type="color" className="form-control" name="color" ref={node => {
                                                     color = node;
-                                                }} placeholder="Color"  onChange={this.changeTextColor} />
-                                            </div>
+                                                }} placeholder="Color" onChange={this.changeTextColor} />
+                                            </div>}
+                                            
                                             <div className="form-group">
                                                 <label htmlFor="backgroundColor">Background Color:</label>
                                                 <input type="color" className="form-control" name="backgroundColor" ref={node => {
@@ -174,12 +283,27 @@ class CreateLogoScreen extends Component {
                                                 }} placeholder="Color"  onChange={this.changeBorderColor} />
                                             </div>
                                             <div className="form-group">
+                                                <label htmlFor="logoHeight">Logo Height:</label>
+                                                <span>  {this.state.height} </span>
+                                                <input type="range" min="100" max='3000' className="form-control-range" name="logoHeight" ref={node => {
+                                                    height = node;
+                                                }} placeholder="Height" onChange={this.changeLogoHeight}/>
+                                            </div>
+                                            <div className="form-group">
+                                                <label htmlFor="logoWidth">Logo Width:</label>
+                                                <span>  {this.state.width} </span>
+                                                <input type="range" min="100" max='3000' className="form-control-range" name="logoWidth" ref={node => {
+                                                    width = node;
+                                                }} placeholder="Width" onChange={this.changeLogoWidth}/>
+                                            </div>
+                                            {this.state.focused && <div className="form-group">
                                                 <label htmlFor="fontSize">Font Size:</label>
-                                                <span> {this.state.fontSize} </span>
+                                                <span> {this.state.focused.textFontSize} </span>
                                                 <input type="range" min="2" max="144" className="form-control-range" name="fontSize" ref={node => {
                                                     fontSize = node;
                                                 }} placeholder="Font Size"  onChange={this.changeFontSize} />
-                                            </div>
+                                            </div>}
+                                            
                                             <div className="form-group">
                                                 <label htmlFor="borderRadius">Border Radius:</label>
                                                 <span> {this.state.borderRadius} </span>
@@ -208,12 +332,49 @@ class CreateLogoScreen extends Component {
                                                     margin = node;
                                                 }} placeholder="Margin"  onChange={this.changeMargin} />
                                             </div>
+                                            <div className="form-group">
+                                                <label htmlFor="newText"> Add More Text:</label>
+                                                <input type="newText" className="form-control" name="newText" ref={node => {
+                                                    //  console.log(node);
+                                                    newText = node;
+                                                }} placeholder="New Text" onChange={(event) => newText = event.target.value} />
+                                                <button type='button' className='btn btn-info' onClick={() => this.addText(newText)} >Add Text</button>
+                                            </div>
+                                            <div className="form-group">
+                                                <label htmlFor="removeText"> Remove a Text:</label>
+                                                <input type="removeText" className="form-control" name="removeText" ref={node => {
+                                                    removeText = node;
+                                                }} placeholder="Name Of Text To Remove" onChange={(event) => removeText = event.target.value} />
+                                                <button type='button' className='btn btn-warning' onClick={() => this.removeText(removeText)} >Remove Text</button>
+                                            </div>
+                                            <div className="form-group">
+                                                <label htmlFor="addImage"> Add an Image URL:</label>
+                                                <input type="url" className="form-control" name="addImage" ref={node => {
+                                                    addImage = node;
+                                                }} placeholder="Image URL here" onChange={(event) => addImage = event.target.value} />
+                                                <button type='button' className='btn btn-info' onClick={() => this.addImage(addImage)} >Insert Image</button>
+                                            </div>
+                                            <div className="form-group">
+                                                <label htmlFor="removeImage"> Remove an Image:</label>
+                                                <input type="removeImage" className="form-control" name="removeImage" ref={node => {
+                                                    removeImage = node;
+                                                }} placeholder="Img URL here" onChange={(event) => removeImage = event.target.value} />
+                                                <button type='button' className='btn btn-warning' onClick={() => this.removeImage(removeImage)} >Remove Image</button>
+                                            </div>
+
                                             <Link to="/" className="btn btn-secondary">Cancel</Link>&nbsp;&nbsp;
                                             <button type="submit" className="btn btn-success" disabled={this.state.isEmpty}>Submit</button>
                                         </form>
                                         </div>
                                             <div className="col"> 
-                                                <div style={styles.container}> {this.state.text}   </div>
+                                                <div style={styles.container}> 
+                                                     {this.state.text && this.state.text.map( (str, index) => <Rnd key={index} onDragStart={() => this.changeFocusedState(index)}
+                                                        onDragStop={(event, destination) => this.updateTextPosition(index, destination.x, destination.y) } bounds='parent' 
+                                                        style={{fontSize: str.textFontSize, color: str.textColor}} default={{x: str.posX, y: str.posY}}>{str.textString}</Rnd> )}
+
+                                                    {this.state.images && this.state.images.map((img, index) => <Rnd key={index}  bounds='parent' 
+                                                        style={{backgroundImage: `url(${img})`, backgroundSize: 'cover'}} default={{x: 50, y:0, height: '30%', width:'30%'}} >  </Rnd>)}
+                                                </div>
                                             </div>
                                     </div>
                                 </div>

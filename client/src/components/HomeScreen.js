@@ -38,6 +38,19 @@ query getUser($id: String!) {
 class HomeScreen extends Component {
     static contextType = AuthContext;
 
+    makeTitle = (logo) => {
+        let title = '';
+        let text = logo.text;
+        for(let str of text){
+            title += str.textString + ' ';
+        }
+        if(title == ''){
+            return "logo with no text";
+        } else{
+            return title;
+        }
+    }
+
     render() {
         return (
             
@@ -53,12 +66,7 @@ class HomeScreen extends Component {
                     //     return logo.created_by._id === this.context.userId
                     // });
                     // console.log(x[0].text[0]);
-                    let title = '';
-                    let texts = x[0].text;
-                    for( let str of texts){
-                        console.log(str.textString);
-                        title += str.textString + ' ';
-                    }
+                    
 
                     return (
                         <div className="container row">
@@ -68,7 +76,7 @@ class HomeScreen extends Component {
                                 {x.map((logo, index) => (
                                     <div key={index} className='home_logo_link'
                                         style={{ cursor: "pointer" }}>
-                                        <Link to={`/edit/${logo._id}`}>{title}</Link>
+                                        <Link to={`/edit/${logo._id}`}>{this.makeTitle(logo)}</Link>
                                     </div>
                                 ))}
                             </div>

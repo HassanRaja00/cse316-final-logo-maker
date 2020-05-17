@@ -88,16 +88,23 @@ class EditLogoScreen extends Component {
         }
     }
 
-    //method to add text to array
+    //method to add text to array w/ default values
     addText = (text) => {
         console.log('adding text');
+        let textObject = {
+            posX: 10,
+            posY: 10,
+            textString: text,
+            textFontSize: 20,
+            textColor: "#000000"
+        }
         if(this.state.text){
             let textArray = this.state.text;
-            textArray.push(text);
+            textArray.push(textObject);
             this.setState( {text: textArray} );
         } else{
             let textArray = [];
-            textArray.push(text);
+            textArray.push(textObject);
             this.setState( {text: textArray} );
         }        
     }
@@ -107,8 +114,8 @@ class EditLogoScreen extends Component {
         console.log('removing text')
         if(this.state.text){
             let textArray = this.state.text;
-            textArray = textArray.filter( str => {
-                return str !== text;
+            textArray = textArray.filter( textObject => {
+                return textObject.textString !== text;
             });
             if(textArray !== this.state.text){ //if the array is not the same after filtering, set the state
                 this.setState( {text: textArray} );
@@ -323,11 +330,11 @@ class EditLogoScreen extends Component {
                                                                 newText = '';
                                                                 removeText = ''
                                                                 //console.log("before colors")
-                                                                color.value = "";
+                                                                color = "";
                                                                 backgroundColor = "";
                                                                 borderColor = "";
                                                                 //console.log('after colors')
-                                                                fontSize.value = "";
+                                                                fontSize = "";
                                                                 borderRadius.value = "";
                                                                 borderWidth.value = "";
                                                                 images = [];
