@@ -130,14 +130,14 @@ class CreateLogoScreen extends Component {
     }
 
     removeText = (text) => {
-        console.log('removing text create');
+        console.log('removing selected text create');
         if(this.state.text){
             let textArray = this.state.text;
             textArray = textArray.filter( textObject => {
-                return textObject.textString !== text;
+                return textObject !== this.state.focused;
             });
             if(textArray !== this.state.text){ //if the array is not the same after filtering, set the state
-                this.setState( {text: textArray} );
+                this.setState( {text: textArray, focused: null} );
             } else{ //if array is the same, notify user
                 return <p>The text entered does not exist</p>
             }
@@ -256,11 +256,11 @@ class CreateLogoScreen extends Component {
                                                 color = "";
                                                 backgroundColor = "";
                                                 borderColor = "";
-                                                fontSize.value = "";
-                                                borderRadius.value = "";
-                                                borderWidth.value = "";
-                                                padding.value = "";
-                                                margin.value = "";
+                                                fontSize = "";
+                                                borderRadius = "";
+                                                borderWidth = "";
+                                                padding = "";
+                                                margin = "";
                                         }}>
                                         
                                             {this.state.focused && <div className="form-group">
@@ -340,13 +340,11 @@ class CreateLogoScreen extends Component {
                                                 }} placeholder="New Text" onChange={(event) => newText = event.target.value} />
                                                 <button type='button' className='btn btn-info' onClick={() => this.addText(newText)} >Add Text</button>
                                             </div>
-                                            <div className="form-group">
-                                                <label htmlFor="removeText"> Remove a Text:</label>
-                                                <input type="removeText" className="form-control" name="removeText" ref={node => {
-                                                    removeText = node;
-                                                }} placeholder="Name Of Text To Remove" onChange={(event) => removeText = event.target.value} />
-                                                <button type='button' className='btn btn-warning' onClick={() => this.removeText(removeText)} >Remove Text</button>
-                                            </div>
+                                            {this.state.focused && <div className="form-group">
+                                            <label htmlFor="removeText"> Remove selected text: "{this.state.focused.textString}"</label>
+                                                <button type='button' className='btn btn-warning' onClick={this.removeText} >Remove Text</button>
+                                            </div>}
+                                            
                                             <div className="form-group">
                                                 <label htmlFor="addImage"> Add an Image URL:</label>
                                                 <input type="url" className="form-control" name="addImage" ref={node => {
@@ -367,6 +365,7 @@ class CreateLogoScreen extends Component {
                                         </form>
                                         </div>
                                             <div className="col"> 
+                                            <p>You can click and drag any piece of text or image, and resize images!</p>
                                                 <div style={styles.container}> 
                                                      {this.state.text && this.state.text.map( (str, index) => <Rnd key={index} onDragStart={() => this.changeFocusedState(index)}
                                                         onDragStop={(event, destination) => this.updateTextPosition(index, destination.x, destination.y) } bounds='parent' 

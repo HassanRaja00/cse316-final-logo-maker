@@ -181,7 +181,7 @@ var queryType = new GraphQLObjectType({
                     .catch(err =>{
                         throw err;
                     });
-                    // const logos = LogoModel.find().exec()
+                    // const logos = LogoModel.find().exec() (alternate way)
                     // if (!logos) {
                     //     throw new Error('Error')
                     // }
@@ -402,7 +402,7 @@ var mutation = new GraphQLObjectType({
                         console.log(err + " hi");
                         throw err;
                     });
-                    // const logoModel = new LogoModel(params);
+                    // const logoModel = new LogoModel(params); (alternate way)
                     // const newLogo = logoModel.save();
                     // UserModel.findById('5eb215daeb6fcb4784093d3f', (err, user) => {
                     //     if(err){
@@ -512,16 +512,6 @@ var mutation = new GraphQLObjectType({
                         console.log(err + " hiiiii");
                         if (err) return next(err)
                     });
-
-                    // return LogoModel.findByIdAndUpdate(params.id, { text: params.text, 
-                    // color: params.color, backgroundColor: params.backgroundColor, 
-                    // borderColor: params.borderColor, fontSize: params.fontSize, 
-                    // borderRadius: params.borderRadius, 
-                    // borderWidth: params.borderWidth, 
-                    // padding: params.padding, margin: params.margin,
-                    //      lastUpdate: new Date() }, function (err) {
-                    //     if (err) return next(err);
-                    // });
                 }
             },
             removeLogo: {

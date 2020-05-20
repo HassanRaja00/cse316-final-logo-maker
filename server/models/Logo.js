@@ -12,8 +12,6 @@ var LogoSchema = new mongoose.Schema({
       textString: String,
       textFontSize: { type: Number, min: 2, max: 144 },
       textColor: String
-      // type: mongoose.Schema.Types.ObjectId, // every piece of text has cooridinates, color, font size
-      // ref: 'LogoText'
     }
   ],
   backgroundColor: String,

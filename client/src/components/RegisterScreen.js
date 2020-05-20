@@ -8,8 +8,15 @@ class RegisterScreen extends Component{
         super(props);
         this.username = React.createRef();
         this.password = React.createRef();
+
+        this.state = {
+            unfilled: false,
+            error: false
+        }
     }
+    
     static contextType = AuthContext;
+
 
     handleSubmit = (event) =>{
         event.preventDefault();
@@ -17,7 +24,8 @@ class RegisterScreen extends Component{
         const pwd = this.password.current.value;
 
         if(user.trim().length === 0 || pwd.trim().length === 0){
-            return; //notify user later
+            this.setState( {unfilled: true} )
+            return;
         }
 
         const reqBody = {
@@ -40,6 +48,7 @@ class RegisterScreen extends Component{
         })
         .then(res => {
             if(res.status !== 200 && res.status !== 201) {
+                this.setState( {error: true} );
                 throw new Error('Register Failed!');
             }
             return res.json();
@@ -48,6 +57,7 @@ class RegisterScreen extends Component{
             console.log(resData);
         })
         .catch(err => {
+            this.setState( {error: true} );
             console.log(err);
         });
         this.props.history.push('/login')
@@ -63,8 +73,8 @@ class RegisterScreen extends Component{
                 <form name="form" className="form-auth" onSubmit={this.handleSubmit} >
                     <h2>Register</h2>
                     <div className="form-group">
-                        <label>Username</label>
-                        <input type="text"id="username" placeholder="Username" className="form-control" ref={this.username}/>
+                        <label>E-mail</label>
+                        <input type="email"id="username" placeholder="E-mail" className="form-control" ref={this.username}/>
                     </div>
                     <div className="form-group">
                         <label>Password</label>
@@ -73,6 +83,12 @@ class RegisterScreen extends Component{
                     <div className="form-actions">
                         <button type="submit" className="btn btn-primary">Register</button>
                     </div><br/>
+                    {this.state.unfilled && <h6
+                    style={{backgroundColor: '#f38484', color:'#870606', textAlign: 'center', padding: 5, borderRadius: 5}}
+                    >Must enter both email and password</h6>}
+                    {this.state.error && <h6
+                    style={{backgroundColor: '#f38484', color:'#870606', textAlign: 'center', padding: 5, borderRadius: 5}}
+                    >An error occured. Please try again</h6>}
                     <div>
                     <div className="d-flex links">
                         Already have an account?&nbsp;&nbsp;<Link to="/login">Sign-in</Link>

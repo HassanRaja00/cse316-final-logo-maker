@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import gql from "graphql-tag";
 import { Query, Mutation } from "react-apollo";
 import { Rnd } from 'react-rnd';
+import htmlToImage from 'html-to-image';
+import download from 'downloadjs';
 
 const GET_LOGO = gql`
     query getLogo($logoId: String) {
@@ -110,15 +112,15 @@ class EditLogoScreen extends Component {
     }
 
     //method to remove from array
-    removeText = (text) => {
-        console.log('removing text')
+    removeText = () => {
+        console.log('removing selected text')
         if(this.state.text){
             let textArray = this.state.text;
             textArray = textArray.filter( textObject => {
-                return textObject.textString !== text;
+                return textObject !== this.state.focused; //if the object as a whole does not match
             });
             if(textArray !== this.state.text){ //if the array is not the same after filtering, set the state
-                this.setState( {text: textArray} );
+                this.setState( {text: textArray, focused: null} );
             } else{ //if array is the same, notify user
                 return <p>The text entered does not exist</p>
             }
@@ -269,6 +271,13 @@ class EditLogoScreen extends Component {
         this.setState( {focused: textPiece, text: newtxt} );
     }
 
+    exportLogo = (e) => {
+        e.preventDefault();
+        htmlToImage.toPng(document.getElementById('logoArea'))
+        .then( function(dataurl) {
+            download(dataurl, 'gologolo-logo.png');
+        });
+    }
 
     render() {
         let height, width, text, color, fontSize, backgroundColor, borderColor, borderRadius, borderWidth, images, padding, margin;
@@ -285,7 +294,6 @@ class EditLogoScreen extends Component {
                     
                     console.log(this.state.text);
                     console.log(this.state.images);
-                    //console.log(this.state.focused);
 
                     const styles = {
                         container: {
@@ -335,11 +343,11 @@ class EditLogoScreen extends Component {
                                                                 borderColor = "";
                                                                 //console.log('after colors')
                                                                 fontSize = "";
-                                                                borderRadius.value = "";
-                                                                borderWidth.value = "";
+                                                                borderRadius = "";
+                                                                borderWidth = "";
                                                                 images = [];
-                                                                padding.value = "";
-                                                                margin.value = "";
+                                                                padding = "";
+                                                                margin = "";
                                                             }}>
                                                                 
                                                                 
@@ -421,13 +429,11 @@ class EditLogoScreen extends Component {
                                                                     }} placeholder="New Text" onChange={(event) => newText = event.target.value} />
                                                                     <button type='button' className='btn btn-info' onClick={() => this.addText(newText)} >Add Text</button>
                                                                 </div>
-                                                                <div className="form-group">
-                                                                    <label htmlFor="removeText"> Remove a Text:</label>
-                                                                    <input type="removeText" className="form-control" name="removeText" ref={node => {
-                                                                        removeText = node;
-                                                                    }} placeholder="Name Of Text To Remove" onChange={(event) => removeText = event.target.value} />
-                                                                    <button type='button' className='btn btn-warning' onClick={() => this.removeText(removeText)} >Remove Text</button>
-                                                                </div>
+                                                                {this.state.focused && <div className="form-group">
+                                                                    <label htmlFor="removeText"> Remove selected text: <br /> "{this.state.focused.textString}"</label> <br />
+                                                                    <button type='button' className='btn btn-warning' onClick={this.removeText} >Remove Text</button>
+                                                                </div>}
+                                                                
                                                                 <div className="form-group">
                                                                     <label htmlFor="addImage"> Add an Image URL:</label>
                                                                     <input type="url" className="form-control" name="addImage" ref={node => {
@@ -436,11 +442,13 @@ class EditLogoScreen extends Component {
                                                                     <button type='button' className='btn btn-info' onClick={() => this.addImage(addImage)} >Insert Image</button>
                                                                 </div>
                                                                 <div className="form-group">
-                                                                    <label htmlFor="removeImage"> Remove an Image: (temp)</label>
+                                                                    <label htmlFor="removeImage"> Remove an Image:</label>
                                                                     <input type="removeImage" className="form-control" name="removeImage" ref={node => {
                                                                         removeImage = node;
                                                                     }} placeholder="Img URL here" onChange={(event) => removeImage = event.target.value} />
-                                                                    <button type='button' className='btn btn-warning' onClick={() => this.removeImage(removeImage)} >Remove Image</button>
+                                                                    <button type='button' className='btn btn-warning' onClick={() => this.removeImage(removeImage)} >Remove Image</button> <br/><br/>
+                                                                    <button className='btn btn-primary' 
+                                                                    onClick={this.exportLogo} >Download Logo</button>
                                                                 </div>
                                                                 
                                                                 <Link to='/' className="btn btn-secondary">Cancel</Link>&nbsp;&nbsp;
@@ -464,7 +472,8 @@ class EditLogoScreen extends Component {
                                                         </Mutation>
                                                         </div>
                                                         <div className="col"> 
-                                                            <div className='container' style={styles.container} >
+                                                        <p>You can click and drag any piece of text or image, and resize images!</p>
+                                                            <div id='logoArea' className='container' style={styles.container} >
                                                                 {this.state.text && this.state.text.map( (str, index) => <Rnd key={index} onDragStart={() => this.changeFocusedState(index)}
                                                                  onDragStop={(event, destination) => this.updateTextPosition(index, destination.x, destination.y) } bounds='parent' 
                                                                  style={{fontSize: str.textFontSize, color: str.textColor}} default={{x: str.posX, y: str.posY}}>{str.textString}</Rnd> )}

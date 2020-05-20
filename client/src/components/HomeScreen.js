@@ -5,19 +5,6 @@ import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
 import AuthContext from '../context/auth-control';
 
-// const GET_LOGOS = gql`
-//   {
-//     getAllLogos {
-//       _id
-//       text
-//       lastUpdate
-//       created_by{
-//           _id
-//           username
-//       }
-//     }
-//   }
-// `;
 
 // just get the user's created logos instead of all of them 
 const GET_USER = gql`
@@ -61,11 +48,6 @@ class HomeScreen extends Component {
                     let x = data.getUser.createdLogos.sort( (a, b) => {
                         return new Date(b.lastUpdate) - new Date(a.lastUpdate);
                     });
-                    //only show logos created by the user who is logged in
-                    // x = x.filter(logo => {
-                    //     return logo.created_by._id === this.context.userId
-                    // });
-                    // console.log(x[0].text[0]);
                     
 
                     return (

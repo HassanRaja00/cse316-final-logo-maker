@@ -10,7 +10,6 @@ import * as serviceWorker from './serviceWorker';
 import HomeScreen from './components/HomeScreen';
 import EditLogoScreen from './components/EditLogoScreen';
 import CreateLogoScreen from './components/CreateLogoScreen';
-import ViewLogoScreen from './components/ViewLogoScreen';
 import RegisterScreen from './components/RegisterScreen';
 import LoginScreen from './components/LoginScreen';
 import AuthContext from './context/auth-control';
